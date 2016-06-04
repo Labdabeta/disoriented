@@ -50,8 +50,7 @@ int indexOf(vector<wall> v, wall n){
     return d-v.begin();
 }
 
-vector<wall> genMaze(int width, int height, float density, int seed){
-    srand(seed);
+vector<wall> genMaze(int width, int height, float density){
     unordered_map<string, int> maze;
     for(int i=0;i<height;i++){
         maze["0,"+str(i)+",let"] = 1;
@@ -91,8 +90,8 @@ vector<wall> genMaze(int width, int height, float density, int seed){
                 maze[pointToString(wallLoc,i) + "," + "right"] = 1;
                 maze[str(wallLoc+1)+","+str(i)+",left"] = 1;
             }
-            vector<wall> near = genMaze(wallLoc+1,height,density,seed+p1);
-            vector<wall> far  = genMaze(width-wallLoc-1,height,density,seed+p2);
+            vector<wall> near = genMaze(wallLoc+1,height,density);
+            vector<wall> far  = genMaze(width-wallLoc-1,height,density);
             
             
            // vector<wall> finalWall = near + wallList + map(lambda x:[x[0]+wallLoc+1,x[1],x[2]],far);
@@ -128,8 +127,8 @@ vector<wall> genMaze(int width, int height, float density, int seed){
                 maze[pointToString(i,wallLoc) + "," + "down"] = 1;
                 maze[str(i)+","+str(wallLoc+1)+",up"] = 1;
             }
-            vector<wall> near= genMaze(width, wallLoc+1, density, seed+p1);
-            vector<wall> far = genMaze(width, height-wallLoc-1, density, seed+p2);
+            vector<wall> near= genMaze(width, wallLoc+1, density);
+            vector<wall> far = genMaze(width, height-wallLoc-1, density);
             near.insert(near.end(),wallList.begin(),wallList.end());
             for(int i=0; i<far.size();i++){
                 wall thisWall = far[i];

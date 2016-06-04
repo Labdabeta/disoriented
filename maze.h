@@ -25,7 +25,7 @@ class Maze
         int player_x,player_y,player_dir;
         int prev_player_x, prev_player_y;
         Sprite player[4];
-        Sprite wall[4];
+        Sprite wall_s[4];
         Sprite tile;
         Sprite bomb;
         Sprite upfire;

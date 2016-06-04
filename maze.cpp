@@ -2,6 +2,7 @@
 
 #define MAZE_WIDTH 21
 #define MAZE_HEIGHT 40
+#define MAZE_DENSITY 0.1
 
 #define VIEWPORT_HEIGHT 5
 #define VIEWPORT_WIDTH 5
@@ -25,10 +26,11 @@
 
 #include <cstdlib>
 #include <time.h>
+#include "mazegen.h"
 
 Maze::Maze() :
     player({Sprite(PLAYER_UP),Sprite(PLAYER_RIGHT),Sprite(PLAYER_DOWN),Sprite(PLAYER_LEFT)}),
-    wall({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
+    wall_s({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
     enemy_s(ENEMY_SPRITE),
     bomb(BOMB_SPRITE),
     upfire(UP_FIRE),
@@ -40,12 +42,24 @@ Maze::Maze() :
         std::vector<Tile> row;
         for (int x = 0; x < MAZE_HEIGHT; ++x) {
             row.push_back({
-                    !(y>0)||rand()%2,
+                    !(y>0),
                     !(x>0),
                     !(y<(MAZE_HEIGHT-1)),
                     !(x<(MAZE_WIDTH-1))});
         }
         grid.push_back(row);
+    }
+
+    std::vector<wall> m = genMaze(MAZE_WIDTH,MAZE_HEIGHT,MAZE_DENSITY);
+    for (wall &w : m) {
+        if (w.dir == "right") {
+            grid[w.y][w.x].right = true;
+            grid[w.y][w.x+1].left = true;
+        }
+        if (w.dir == "down") {
+            grid[w.y][w.x].down = true;
+            grid[w.y+1][w.x].up = true;
+        }
     }
 
     for (int y = 0; y < MAZE_HEIGHT; ++y) {
@@ -98,10 +112,10 @@ void Maze::onDraw(Graphics &g) {
             int left = x * TILE_SIZE;//(x-((prev_player_x+player_x)/2.0)) * TILE_SIZE + 500;
             int top = (y-player_y) * TILE_SIZE + 350;
             tile.draw(g,left, top, TILE_SIZE,TILE_SIZE);
-            if (grid[y][x].up) wall[0].draw(g,left,top,TILE_SIZE,TILE_SIZE);
-            if (grid[y][x].down) wall[2].draw(g,left,top,TILE_SIZE,TILE_SIZE);
-            if (grid[y][x].right) wall[1].draw(g,left,top,TILE_SIZE,TILE_SIZE);
-            if (grid[y][x].left) wall[3].draw(g,left,top,TILE_SIZE,TILE_SIZE);
+            if (grid[y][x].up) wall_s[0].draw(g,left,top,TILE_SIZE,TILE_SIZE);
+            if (grid[y][x].down) wall_s[2].draw(g,left,top,TILE_SIZE,TILE_SIZE);
+            if (grid[y][x].right) wall_s[1].draw(g,left,top,TILE_SIZE,TILE_SIZE);
+            if (grid[y][x].left) wall_s[3].draw(g,left,top,TILE_SIZE,TILE_SIZE);
         }
     }
 
