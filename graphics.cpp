@@ -1,5 +1,5 @@
 #include "graphics.h"
-#define GAME_NAME "Astray and Adrift"
+#define GAME_NAME "Waterfall"
 
 #define WIN_WIDTH 1050
 #define WIN_HEIGHT 750

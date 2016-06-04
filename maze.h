@@ -12,14 +12,22 @@ struct Tile {
     bool up,left,down,right;
 };
 
+struct Enemy {
+    int x,y;
+};
+
 class Maze 
 {// private:
         //dir is 0 = up, 1 = right, 2 = down, 3 = left
         int player_x,player_y,player_dir;
+        int prev_player_x, prev_player_y;
         Sprite player[4];
         Sprite wall[4];
         Sprite tile;
+        Sprite enemy_s;
         std::vector<std::vector<Tile> > grid;
+        std::vector<Enemy> enemies;
+        bool move;
     public:
         Maze();
 
