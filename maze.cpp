@@ -6,6 +6,7 @@
 #define VIEWPORT_HEIGHT 5
 #define VIEWPORT_WIDTH 5
 
+#define MAX_BOMBS 1
 
 #define WALL_UP "Wall_Up.png"
 #define WALL_RIGHT "Wall_Right.png"
@@ -17,7 +18,10 @@
 #define PLAYER_DOWN "player_down.png"
 #define TILE_SPRITE "tile.png"
 #define ENEMY_SPRITE "enemy.png"
-#define BOMB_SPRITE "player_left.png"
+#define BOMB_SPRITE "bomb.png"
+#define DOWN_FIRE "Up_Fire.png"
+#define UP_FIRE "Down_Fire.png"
+#define MID_FIRE "Middle_Fire.png"
 
 #include <cstdlib>
 #include <time.h>
@@ -27,6 +31,9 @@ Maze::Maze() :
     wall({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
     enemy_s(ENEMY_SPRITE),
     bomb(BOMB_SPRITE),
+    upfire(UP_FIRE),
+    downfire(DOWN_FIRE),
+    midfire(MID_FIRE),
     tile(TILE_SPRITE) {
     srand(time(NULL));
     for (int y = 0; y < MAZE_HEIGHT; ++y) {
@@ -112,6 +119,14 @@ void Maze::onDraw(Graphics &g) {
     player[player_dir].draw(g,player_x*TILE_SIZE,350,TILE_SIZE,TILE_SIZE);
     prev_player_x = player_x;
     prev_player_y = player_y;
+
+    for (int i=0; i < blown_columns.size(); ++i) {
+        downfire.draw(g,blown_columns[i]*TILE_SIZE,(-player_y)*TILE_SIZE + 350,TILE_SIZE,TILE_SIZE);
+        for (int y = 1; y < MAZE_HEIGHT-1; ++y)
+            midfire.draw(g,blown_columns[i]*TILE_SIZE,(y-player_y)*TILE_SIZE + 350,TILE_SIZE,TILE_SIZE);
+        upfire.draw(g,blown_columns[i]*TILE_SIZE,(MAZE_HEIGHT-player_y)*TILE_SIZE + 350,TILE_SIZE,TILE_SIZE);
+    }
+    blown_columns.clear();
 }
 
 void Maze::onUp() {
@@ -136,11 +151,12 @@ void Maze::onLeft() {
 }
 
 void Maze::onA() {
-    bombs.push_back({player_x,player_y});
+    if (bombs.size() < MAX_BOMBS) bombs.push_back({player_x,player_y});
 }
 
 void Maze::blow_column(int x) {
     for (auto i = enemies.begin(); i != enemies.end(); ++i) {
         if (i->x == x) { enemies.erase(i); blow_column(x); return; }
     }
+    blown_columns.push_back(x);
 }

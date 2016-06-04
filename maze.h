@@ -28,12 +28,16 @@ class Maze
         Sprite wall[4];
         Sprite tile;
         Sprite bomb;
+        Sprite upfire;
+        Sprite downfire;
+        Sprite midfire;
         Sprite enemy_s;
         std::vector<std::vector<Tile> > grid;
         std::vector<Enemy> enemies;
         std::vector<Bomb> bombs;
         bool move;
         void blow_column(int x);
+        std::vector<int> blown_columns;
     public:
         Maze();
 
