@@ -1,7 +1,6 @@
 #ifndef MAZE_H
 #define MAZE_H
 
-#include "player.h"
 #include "sprites.h"
 
 #include <vector>
@@ -16,6 +15,10 @@ struct Enemy {
     int x,y;
 };
 
+struct Bomb {
+    int x,y;
+};
+
 class Maze 
 {// private:
         //dir is 0 = up, 1 = right, 2 = down, 3 = left
@@ -24,10 +27,13 @@ class Maze
         Sprite player[4];
         Sprite wall[4];
         Sprite tile;
+        Sprite bomb;
         Sprite enemy_s;
         std::vector<std::vector<Tile> > grid;
         std::vector<Enemy> enemies;
+        std::vector<Bomb> bombs;
         bool move;
+        void blow_column(int x);
     public:
         Maze();
 
@@ -38,6 +44,7 @@ class Maze
         void onDown();
         void onRight();
         void onLeft();
+        void onA();
 };
 
 #endif /* MAZE_H */

@@ -12,7 +12,7 @@ class AstrayAndAdrift : public Graphics
         }
         bool onStep() { maze.onStep(); return false; }
         void onDraw() { maze.onDraw(*this); }
-        void onA() {}
+        void onA() { maze.onA(); }
         void onB() {}
         void onC() {}
         void onD() {}
