@@ -16,12 +16,14 @@
 #define PLAYER_LEFT "player_left.png"
 #define PLAYER_DOWN "player_down.png"
 #define TILE_SPRITE "tile.png"
+#define PORTAL_SPRITE "portal.png"
 
 #include <cstdlib>
 
 Maze::Maze() :
     player({Sprite(PLAYER_UP),Sprite(PLAYER_RIGHT),Sprite(PLAYER_DOWN),Sprite(PLAYER_LEFT)}),
     wall({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
+    portal(PORTAL_SPRITE),
     tile(TILE_SPRITE) {
     for (int y = 0; y < MAZE_HEIGHT; ++y) {
         std::vector<Tile> row;
@@ -57,6 +59,7 @@ void Maze::onDraw(Graphics &g) {
         }
     }
     player[player_dir].draw(g,500,350,TILE_SIZE,TILE_SIZE);
+    portal.draw(g,0,0,1050,750);
 }
 
 void Maze::onUp() {

@@ -3,6 +3,7 @@
 
 #define WIN_WIDTH 1050
 #define WIN_HEIGHT 750
+#define FPS 60
 
 Graphics::Graphics() {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -29,6 +30,7 @@ Graphics::~Graphics() {
 }
 
 void Graphics::run() {
+    int tick = SDL_GetTicks();
     SDL_Event e;
     while (!done) {
         while (SDL_PollEvent(&e)) {
@@ -62,7 +64,8 @@ void Graphics::run() {
         onDraw();
         SDL_RenderPresent(renderer);
 
-
-        SDL_Delay(200);
+        int now = SDL_GetTicks();
+        if (now - tick < (1000/FPS)) 
+            SDL_Delay((1000/FPS) - (now-tick));
     }
 }

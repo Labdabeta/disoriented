@@ -19,6 +19,7 @@ class Maze
         Sprite player[4];
         Sprite wall[4];
         Sprite tile;
+        Sprite portal;
         std::vector<std::vector<Tile> > grid;
     public:
         Maze();
