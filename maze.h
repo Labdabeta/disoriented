@@ -4,6 +4,7 @@
 #define SCARY_ENEMY_PROB 100
 
 #include "sprites.h"
+#include "sounds.h"
 
 #include <vector>
 
@@ -81,6 +82,7 @@ class Maze
         //dir is 0 = up, 1 = right, 2 = down, 3 = left
         int player_x,player_y,player_dir;
         int prev_player_x, prev_player_y;
+        Sound expl; Sound hit; Sound pickup; Sound sound_web;
         Sprite player[4]; Sprite key_player[4]; Sprite wall_s[4];
         Sprite fplayer[4]; Sprite fkey_player[4]; 
         Sprite tile[7]; Sprite bomb; Sprite dynamite;

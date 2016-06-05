@@ -87,6 +87,11 @@
 #define PORTAL_2 "Middle_Health_Aperture.png"
 #define PORTAL_3 "Low_Health_Aperture.png"
 
+#define SOUND_EXPL "Explosion.wav"
+#define SOUND_HIT "Hit_Hurt.wav"
+#define SOUND_PICKUP "Pickup_Coin.wav"
+#define SOUND_WEB "web.wav"
+
 #include <cstdlib>
 #include <time.h>
 #include "mazegen.h"
@@ -121,6 +126,10 @@ Maze::Maze(int w, int h, float d, int e, int l) :
     wenemy_s({Sprite(WENEMY_UP),Sprite(WENEMY_RIGHT),Sprite(WENEMY_DOWN),Sprite(WENEMY_LEFT)}),
     webenemy_s({Sprite(WEBENEMY_UP),Sprite(WEBENEMY_RIGHT),Sprite(WEBENEMY_DOWN),Sprite(WEBENEMY_LEFT)}),
     bomb(BOMB_SPRITE),
+    expl(SOUND_EXPL),
+    hit(SOUND_HIT),
+    pickup(SOUND_PICKUP),
+    sound_web(SOUND_WEB),
     web(WEB_SPRITE),
     dynamite(DYNAMITE_SPRITE),
     upfire(UP_FIRE),
@@ -218,6 +227,7 @@ void Maze::collision_check()
 
         if (enemies[i].x == player_x && enemies[i].y == player_y) {
             health--;
+            hit.play();
             if (health < 0) {
                 health = 0;
                 game_over = enemies[i].type+1;
@@ -231,6 +241,7 @@ void Maze::collision_check()
         if (webs[i].x == player_x && webs[i].y == player_y) {
             stucktime += WEB_TIME;
             webs.erase(webs.begin() + i);
+            sound_web.play();
             break;
         }
     }
@@ -249,6 +260,7 @@ void Maze::collision_check()
     if (key_or_exit.x == player_x && key_or_exit.y == player_y) {
         if (!has_key) {
             has_key = true;
+            pickup.play();
             std::vector<int> exitloc = generateThing(player_x,player_y,MAZE_WIDTH,MAZE_HEIGHT,MINIMUM_GEN_DISTANCE);
             key_or_exit = {exitloc[0], exitloc[1]};
         } else { win = true; }
@@ -309,6 +321,7 @@ void Maze::onStep() {
             if (bombs[b].x == enemies[i].x && bombs[b].y == enemies[i].y) {
                 blow_column(bombs[b].x);
                 bombs.erase(bombs.begin()+b);
+                expl.play();
                 break;
             }
         }

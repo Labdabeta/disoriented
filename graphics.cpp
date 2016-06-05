@@ -17,6 +17,8 @@ Graphics::Graphics() {
 
     IMG_Init(IMG_INIT_PNG);
 
+    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+
     window = SDL_CreateWindow(
             GAME_NAME,
             SDL_WINDOWPOS_UNDEFINED,
@@ -36,6 +38,7 @@ Graphics::Graphics() {
 
 Graphics::~Graphics() {
     SDL_DestroyWindow(window);
+    Mix_CloseAudio();
     IMG_Quit();
     SDL_Quit();
 }

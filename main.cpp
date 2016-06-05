@@ -18,6 +18,7 @@
 #define DELTA_E 1
 
 #define START_SCREEN "Start_Legend.png"
+#define GENDER_SCREEN "Character_Choice.png"
 #define RETRY_SCREEN_PHANTASM "Retry_Option.png"
 #define BITCH_SCREEN_PHANTASM "Quit_Option.png"
 #define RETRY_SCREEN_MRHUGGZ "MrHuggz_Game_Over_Retry.png"
@@ -27,24 +28,29 @@
 #define RETRY_SCREEN_SPIDER "Spider_Game_Over_Quit.png"
 #define BITCH_SCREEN_SPIDER "Spider_Game_Over_Quit.png"
 
+#define MUSIC "bgm.wav"
 
 class AstrayAndAdrift : public Graphics
 {// private:
     Maze maze;
+    Music music;
     int w,h,e;
     int level;
     double d;
     int why; //why'd you die?
-    int state; // 0 = start, 1 = playing, 2 = retry, 3 = bitch, 4 = quit
-    Sprite start,retry[4],bitch[4];
+    int state; // 0 = start, 1 = playing, 2 = retry, 3 = bitch, 4 = quit, -1 choose gender
+    Sprite start,gender,retry[4],bitch[4];
     int getD() { if (why == -1) return 0; return why; }
     public:
         AstrayAndAdrift() : 
+            music(MUSIC),
             maze(INIT_W,INIT_H,INIT_D,INIT_E,0),
             start(START_SCREEN),
+            gender(GENDER_SCREEN),
             retry({Sprite(RETRY_SCREEN_MRHUGGZ),Sprite(RETRY_SCREEN_PHANTASM),Sprite(RETRY_SCREEN_WALL),Sprite(RETRY_SCREEN_SPIDER)}),
             bitch({Sprite(BITCH_SCREEN_MRHUGGZ),Sprite(BITCH_SCREEN_PHANTASM),Sprite(BITCH_SCREEN_WALL),Sprite(BITCH_SCREEN_SPIDER)})
         {
+            music.play();
             w = INIT_W;
             h = INIT_H;
             d = INIT_D;
@@ -75,6 +81,7 @@ class AstrayAndAdrift : public Graphics
         }
         void onDraw() { 
             switch (state) {
+                case -1: gender.draw(*this,0,0,WIDTH,HEIGHT); break;
                 case 0: start.draw(*this,0,0,WIDTH,HEIGHT); break;
                 case 1: maze.onDraw(*this); break;
                 case 2: retry[getD()].draw(*this,0,0,WIDTH,HEIGHT); break;
@@ -83,7 +90,8 @@ class AstrayAndAdrift : public Graphics
         }
         void onA() { 
             switch (state) {
-                case 0: maze.male(true); state = 1; break;
+                case -1: maze.male(true); state = 1; break;
+                case 0: state = -1; break;
                 case 1: maze.onA(); break;
                 case 2: 
                     w = INIT_W; 
@@ -100,8 +108,8 @@ class AstrayAndAdrift : public Graphics
             }
         }
         void onB() { 
-            if (state == 0) { maze.male(false); state = 1; }
             if (state == 1) { maze.onB(); } 
+            if (state == -1) { maze.male(false); state = 1; }
         }
         void onC() {
             w += DELTA_W;
