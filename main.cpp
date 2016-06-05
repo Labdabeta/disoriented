@@ -28,7 +28,7 @@
 #define RETRY_SCREEN_SPIDER "Spider_Game_Over_Quit.png"
 #define BITCH_SCREEN_SPIDER "Spider_Game_Over_Quit.png"
 
-#define MUSIC "bgm.wav"
+#define MUSIC "Soundtrack.mp3"
 
 class AstrayAndAdrift : public Graphics
 {// private:
