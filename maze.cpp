@@ -365,10 +365,16 @@ void Maze::onDraw(Graphics &g) {
 
     if (!has_key) {
         key.draw(g,getX(key_or_exit.x),getY(key_or_exit.y),TILE_SIZE,TILE_SIZE);
-        player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
+        if (ismale)
+            player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
+        else
+            fplayer[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
     } else {
         exit.draw(g,getX(key_or_exit.x),getY(key_or_exit.y),TILE_SIZE,TILE_SIZE);
-        key_player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
+        if (ismale)
+            key_player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
+        else
+            fkey_player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
     }
 
 
