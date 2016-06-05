@@ -10,6 +10,9 @@
 #define INIT_AMMO 10
 
 #define WALL_CHANCE 10
+#define WEB_CHANCE 10
+
+#define WEB_TIME 5
 
 #define MINIMUM_GEN_DISTANCE 10
 #define TILES_PER_ORB_STEP 30
@@ -26,6 +29,14 @@
 #define KPLAYER_DOWN "Character_Front_Key.png"
 #define KPLAYER_LEFT "Character_Left_Key.png"
 #define KPLAYER_RIGHT "Character_Right_Key.png"
+#define FPLAYER_UP "Character_Fem_Back.png"
+#define FPLAYER_RIGHT "Character_Fem_Right.png"
+#define FPLAYER_LEFT "Character_Fem_Left.png"
+#define FPLAYER_DOWN "Character_Fem_Front.png"
+#define FKPLAYER_UP "Character_Fem_Back.png"
+#define FKPLAYER_DOWN "Character_Fem_Front_Key.png"
+#define FKPLAYER_LEFT "Character_Fem_Left_Key.png"
+#define FKPLAYER_RIGHT "Character_Fem_Right_Key.png"
 #define TILE_SPRITE "tile.png"
 #define TILEH_SPRITE "tile_hidden.png"
 #define TILE_SPRITE2 "tile2.png"
@@ -48,6 +59,10 @@
 #define WENEMY_DOWN "Wall_Monster_Friend.png"
 #define WENEMY_LEFT "Wall_Monster_Left.png"
 #define WENEMY_RIGHT "Wall_Monster_Right.png"
+#define WEBENEMY_UP "Spider_Monster_Back.png"
+#define WEBENEMY_DOWN "Spider_Monster_Front.png"
+#define WEBENEMY_LEFT "Spider_Monster_Left.png"
+#define WEBENEMY_RIGHT "Spider_Monster_Right.png"
 #define BOMB_SPRITE "bomb.png"
 #define DOWN_FIRE "Up_Fire.png"
 #define UP_FIRE "Down_Fire.png"
@@ -61,6 +76,12 @@
 #define DYNAMITE_SPRITE "Dynamite.png"
 #define TORCH_SPRITE "Torch_Add_Health.png"
 #define AMMO_SPRITE "Explosives_Counter.png"
+#define WEB_SPRITE "Web.png"
+#define WEBBED0 "Web5.png"
+#define WEBBED1 "Web4.png"
+#define WEBBED2 "Web3.png"
+#define WEBBED3 "Web2.png"
+#define WEBBED4 "Web1.png"
 
 #define PORTAL_1 "High_Health_Aperture.png"
 #define PORTAL_2 "Middle_Health_Aperture.png"
@@ -92,10 +113,15 @@ Maze::Maze(int w, int h, float d, int e, int l) :
     MAZE_DENSITY(d),
     player({Sprite(PLAYER_UP),Sprite(PLAYER_RIGHT),Sprite(PLAYER_DOWN),Sprite(PLAYER_LEFT)}),
     key_player({Sprite(KPLAYER_UP),Sprite(KPLAYER_RIGHT),Sprite(KPLAYER_DOWN),Sprite(KPLAYER_LEFT)}),
+
+    fplayer({Sprite(FPLAYER_UP),Sprite(FPLAYER_RIGHT),Sprite(FPLAYER_DOWN),Sprite(FPLAYER_LEFT)}),
+    fkey_player({Sprite(FKPLAYER_UP),Sprite(FKPLAYER_RIGHT),Sprite(FKPLAYER_DOWN),Sprite(FKPLAYER_LEFT)}),
     wall_s({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
     enemy_s({Sprite(ENEMY_UP),Sprite(ENEMY_RIGHT),Sprite(ENEMY_DOWN),Sprite(ENEMY_LEFT)}),
     wenemy_s({Sprite(WENEMY_UP),Sprite(WENEMY_RIGHT),Sprite(WENEMY_DOWN),Sprite(WENEMY_LEFT)}),
+    webenemy_s({Sprite(WEBENEMY_UP),Sprite(WEBENEMY_RIGHT),Sprite(WEBENEMY_DOWN),Sprite(WEBENEMY_LEFT)}),
     bomb(BOMB_SPRITE),
+    web(WEB_SPRITE),
     dynamite(DYNAMITE_SPRITE),
     upfire(UP_FIRE),
     downfire(DOWN_FIRE),
@@ -109,15 +135,18 @@ Maze::Maze(int w, int h, float d, int e, int l) :
     exit(EXIT_SPRITE),
     torch_s(TORCH_SPRITE),
     ammo_s(AMMO_SPRITE),
+    webbed({Sprite(WEBBED0),Sprite(WEBBED1),Sprite(WEBBED2),Sprite(WEBBED3),Sprite(WEBBED4)}),
     tileh({Sprite(TILEH_SPRITE),Sprite(TILEH_SPRITE2),Sprite(TILEH_SPRITE3),Sprite(TILEH_SPRITE4),Sprite(TILEH_SPRITE5),Sprite(TILEH_SPRITE6),Sprite(TILEH_SPRITE7)}),
     tile({Sprite(TILE_SPRITE),Sprite(TILE_SPRITE2),Sprite(TILE_SPRITE3),Sprite(TILE_SPRITE4),Sprite(TILE_SPRITE5),Sprite(TILE_SPRITE6),Sprite(TILE_SPRITE7)}) {
     srand(time(NULL));
     std::cout<<"Tile size: "<<TILE_SIZE<<std::endl;
+    ismale = true;
     reset(w,h,d,e,l);
 }
 
 void Maze::reset(int w, int h, float d, int e, int l) 
 {
+    std::cout<<"Reset("<<w<<","<<h<<","<<d<<","<<e<<","<<l<<")"<<std::endl;
     MAZE_HEIGHT = h;
     MAZE_WIDTH = w;
     MAZE_DENSITY = d;
@@ -125,6 +154,7 @@ void Maze::reset(int w, int h, float d, int e, int l)
         row.clear();
     }
     grid.clear();
+    webs.clear();
 
     for (int y = 0; y < h; ++y) {
         std::vector<Tile> row;
@@ -164,6 +194,7 @@ void Maze::reset(int w, int h, float d, int e, int l)
     win = false;
     enemycount = e;
     level = l;
+    stucktime = 0;
 
     std::vector<int> keyloc = generateThing(player_x,player_y,w,h,MINIMUM_GEN_DISTANCE);
     key_or_exit = {keyloc[0], keyloc[1]};
@@ -186,13 +217,21 @@ void Maze::collision_check()
     for (int i=0; i < enemies.size(); ++i) {
 
         if (enemies[i].x == player_x && enemies[i].y == player_y) {
-            enemies.erase(enemies.begin() + i);
             health--;
             if (health < 0) {
                 health = 0;
-                game_over = true;
+                game_over = enemies[i].type+1;
             }
+            enemies.erase(enemies.begin() + i);
             continue;
+        }
+    }
+
+    for (int i=0; i < webs.size(); ++i) {
+        if (webs[i].x == player_x && webs[i].y == player_y) {
+            stucktime += WEB_TIME;
+            webs.erase(webs.begin() + i);
+            break;
         }
     }
 
@@ -203,7 +242,7 @@ void Maze::collision_check()
                   player_y * TILE_SIZE + TILE_SIZE/3,
                   (player_x+1)*TILE_SIZE,
                   (player_y+1)*TILE_SIZE - TILE_SIZE/3)) {
-        game_over=true;
+        game_over=-1;
     }
     //if (sqrt((orb.x-player_x*TILE_SIZE)*(orb.x-player_x*TILE_SIZE)+(orb.y-player_y*TILE_SIZE)*(orb.y-player_y*TILE_SIZE)) < TILE_SIZE/2)
     
@@ -220,7 +259,6 @@ void Maze::collision_check()
         std::vector<int> torchloc = generateThing(player_x,player_y,MAZE_WIDTH,MAZE_HEIGHT,MINIMUM_GEN_DISTANCE);
         torch = {torchloc[0], torchloc[1]};
     }
-
 }
 
 void Maze::onStep() {
@@ -228,12 +266,12 @@ void Maze::onStep() {
     for (int i=0; i < enemies.size(); ++i) {
 
         if (enemies[i].x == player_x && enemies[i].y == player_y) {
-            enemies.erase(enemies.begin() + i);
             health--;
             if (health < 0) {
                 health = 0;
-                game_over = true;
+                game_over = enemies[i].type + 1;
             }
+            enemies.erase(enemies.begin() + i);
             continue;
         }
 
@@ -251,7 +289,7 @@ void Maze::onStep() {
                 enemies[i].x < -1) enemies.erase(enemies.begin() + i);
         }
 
-        if (enemies[i].wall && rand()%WALL_CHANCE == 0) {
+        if (enemies[i].type == 1 && rand()%WALL_CHANCE == 0) {
             if (enemies[i].y >= 0 && enemies[i].x >= 0 &&
                 enemies[i].y < MAZE_HEIGHT && enemies[i].x < MAZE_WIDTH) {
                 switch (rand() % 4) {
@@ -261,6 +299,10 @@ void Maze::onStep() {
                     case 3: grid[enemies[i].y][enemies[i].x].left = true; break;
                 }
             }
+        }
+
+        if (enemies[i].type == 2 && rand()%WEB_CHANCE == 0) {
+            webs.push_back({enemies[i].x, enemies[i].y});
         }
 
         for (int b=0; b < bombs.size(); ++b) {
@@ -282,8 +324,9 @@ void Maze::onStep() {
 
     collision_check();
 
-    for (int i=0; i < enemycount; ++i)
-        enemies.push_back(Enemy(MAZE_WIDTH,MAZE_HEIGHT));
+    for (int i=0; i < enemycount; ++i) {
+        if (rand() % 2) enemies.push_back(Enemy(MAZE_WIDTH,MAZE_HEIGHT));
+    }
 
 
     grid[player_y][player_x].revealed = true;
@@ -328,12 +371,27 @@ void Maze::onDraw(Graphics &g) {
         key_player[player_dir].draw(g,getX(player_x),getY(player_y),TILE_SIZE,TILE_SIZE);
     }
 
-    torch_s.draw(g,getX(torch.x),getY(torch.y),TILE_SIZE,TILE_SIZE);
 
     for (auto &enemy : enemies) {
-        enemy_s[enemy.dir].draw(g,getX(enemy.x), 
+        switch (enemy.type) { 
+            case 0: 
+                enemy_s[enemy.dir].draw(g,getX(enemy.x), 
                        getY(enemy.y),
                        TILE_SIZE, TILE_SIZE);
+                break;
+            case 1: 
+                wenemy_s[enemy.dir].draw(g,getX(enemy.x),
+                        getY(enemy.y), TILE_SIZE, TILE_SIZE);
+                break;
+            case 2:
+                webenemy_s[enemy.dir].draw(g,getX(enemy.x),
+                        getY(enemy.y), TILE_SIZE, TILE_SIZE);
+                break;
+        }
+    }
+
+    for (auto &w : webs) {
+        web.draw(g,getX(w.x),getY(w.y),TILE_SIZE,TILE_SIZE);
     }
 
     for (auto &b : bombs) {
@@ -365,6 +423,10 @@ void Maze::onDraw(Graphics &g) {
 
     portal[health].draw(g,0,0,WIDTH,HEIGHT);
 
+    if (stucktime) {
+        webbed[stucktime-1].draw(g,0,0,WIDTH,HEIGHT);
+    } 
+    torch_s.draw(g,getX(torch.x),getY(torch.y),TILE_SIZE,TILE_SIZE);
     orb_s.draw(g,orb.x+getX(0),orb.y+getY(0),TILE_SIZE,TILE_SIZE);
 
     if (bombs.size() > 0) {
@@ -385,6 +447,7 @@ void Maze::onDraw(Graphics &g) {
 }
 
 void Maze::onUp() {
+    if (stucktime) { stucktime--; return; }
     grid[player_y][player_x].revealed = true;
     if (!grid[player_y][player_x].up) {
         player_y--;
@@ -394,6 +457,7 @@ void Maze::onUp() {
 }
 
 void Maze::onDown() {
+    if (stucktime) { stucktime--; return; }
     grid[player_y][player_x].revealed = true;
     if (!grid[player_y][player_x].down) {
         player_y++;
@@ -403,6 +467,7 @@ void Maze::onDown() {
 }
 
 void Maze::onRight() {
+    if (stucktime) { stucktime--; return; }
     grid[player_y][player_x].revealed = true;
     if (!grid[player_y][player_x].right) {
         player_x++;
@@ -412,6 +477,7 @@ void Maze::onRight() {
 }
 
 void Maze::onLeft() {
+    if (stucktime) { stucktime--; return; }
     grid[player_y][player_x].revealed = true;
     if (!grid[player_y][player_x].left) {
         player_x--;

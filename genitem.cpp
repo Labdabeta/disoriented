@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -14,9 +15,30 @@ int sqrDist(int x, int y){
     int c= x*x+y*y;
     return c;
 }
+
+int distance(int sourcex, int sourcey, int destx, int desty) {
+    int deltX = sourcex-destx;
+    int deltY = sourcey-desty;
+    return sqrt((deltX*deltX)+(deltY*deltY));
+}
+
 vector<int> generateThing(int playerX, int playerY, int xDim, int yDim, int minDist){
-    vector<int> ret = {rand() % xDim, rand() % yDim};
-    
+    bool done = false;
+
+    vector<int> ret;
+
+    while (!done) {
+        ret.clear();
+        ret.push_back(rand() % xDim);
+        ret.push_back(rand() % yDim);
+        if (distance(ret[0],ret[1],playerX,playerY) < minDist) {
+            done = false;
+        }
+        else {
+            done = true;
+        }
+    }
+
     return ret;
     
     /*
