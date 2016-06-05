@@ -91,6 +91,9 @@
 #define SOUND_HIT "Hit_Hurt.wav"
 #define SOUND_PICKUP "Pickup_Coin.wav"
 #define SOUND_WEB "web.wav"
+#define SOUND_DEAD "death.wav"
+#define SOUND_PORTAL "portal.wav"
+#define SOUND_TORCH "torch.wav"
 
 #include <cstdlib>
 #include <time.h>
@@ -118,7 +121,6 @@ Maze::Maze(int w, int h, float d, int e, int l) :
     MAZE_DENSITY(d),
     player({Sprite(PLAYER_UP),Sprite(PLAYER_RIGHT),Sprite(PLAYER_DOWN),Sprite(PLAYER_LEFT)}),
     key_player({Sprite(KPLAYER_UP),Sprite(KPLAYER_RIGHT),Sprite(KPLAYER_DOWN),Sprite(KPLAYER_LEFT)}),
-
     fplayer({Sprite(FPLAYER_UP),Sprite(FPLAYER_RIGHT),Sprite(FPLAYER_DOWN),Sprite(FPLAYER_LEFT)}),
     fkey_player({Sprite(FKPLAYER_UP),Sprite(FKPLAYER_RIGHT),Sprite(FKPLAYER_DOWN),Sprite(FKPLAYER_LEFT)}),
     wall_s({Sprite(WALL_UP),Sprite(WALL_RIGHT),Sprite(WALL_DOWN),Sprite(WALL_LEFT)}),
@@ -130,6 +132,9 @@ Maze::Maze(int w, int h, float d, int e, int l) :
     hit(SOUND_HIT),
     pickup(SOUND_PICKUP),
     sound_web(SOUND_WEB),
+    dead_sound(SOUND_DEAD),
+    portal_sound(SOUND_PORTAL),
+    torch_sound(SOUND_TORCH),
     web(WEB_SPRITE),
     dynamite(DYNAMITE_SPRITE),
     upfire(UP_FIRE),
@@ -253,6 +258,7 @@ void Maze::collision_check()
                   player_y * TILE_SIZE + TILE_SIZE/3,
                   (player_x+1)*TILE_SIZE,
                   (player_y+1)*TILE_SIZE - TILE_SIZE/3)) {
+        dead_sound.play();
         game_over=-1;
     }
     //if (sqrt((orb.x-player_x*TILE_SIZE)*(orb.x-player_x*TILE_SIZE)+(orb.y-player_y*TILE_SIZE)*(orb.y-player_y*TILE_SIZE)) < TILE_SIZE/2)
@@ -263,13 +269,17 @@ void Maze::collision_check()
             pickup.play();
             std::vector<int> exitloc = generateThing(player_x,player_y,MAZE_WIDTH,MAZE_HEIGHT,MINIMUM_GEN_DISTANCE);
             key_or_exit = {exitloc[0], exitloc[1]};
-        } else { win = true; }
+        } else { 
+            win = true; 
+            portal_sound.play();
+        }
     }
 
     if (torch.x == player_x && torch.y == player_y) {
         if (health < 2) ++health;
         std::vector<int> torchloc = generateThing(player_x,player_y,MAZE_WIDTH,MAZE_HEIGHT,MINIMUM_GEN_DISTANCE);
         torch = {torchloc[0], torchloc[1]};
+        torch_sound.play();
     }
 }
 
@@ -523,6 +533,9 @@ void Maze::blow_column(int x) {
     for (auto i = enemies.begin(); i != enemies.end(); ++i) {
         if (i->x == x) { enemies.erase(i); blow_column(x); return; }
     }
+    for (auto i = webs.begin(); i != webs.end(); ++i) {
+        if (i->x == x) { webs.erase(i); blow_column(x); return; }
+    }
     grid[0][x].down = false;
     for (int y = 1; y < MAZE_HEIGHT - 1; ++y) {
         grid[y][x].up = false;
@@ -536,6 +549,9 @@ void Maze::blow_column(int x) {
 void Maze::blow_row(int y) {
     for (auto i = enemies.begin(); i != enemies.end(); ++i) {
         if (i->y == y) { enemies.erase(i); blow_row(y); return; }
+    }
+    for (auto i = webs.begin(); i != webs.end(); ++i) {
+        if (i->y == y) { webs.erase(i); blow_row(y); return; }
     }
     grid[y][0].right = false;
     for (int x = 1; x < MAZE_WIDTH - 1; ++x) {

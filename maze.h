@@ -21,7 +21,8 @@ class Enemy {
         Enemy(int xDim, int yDim){
             type = 0;
             if (rand()%SCARY_ENEMY_PROB == 0) {
-                type = rand() % 2 + 1;
+                type = rand() % 3 + 1;
+                if (type == 3) type = 2;
             }
             dir = rand()%4;
             switch (dir) {
@@ -83,6 +84,7 @@ class Maze
         int player_x,player_y,player_dir;
         int prev_player_x, prev_player_y;
         Sound expl; Sound hit; Sound pickup; Sound sound_web;
+        Sound dead_sound; Sound portal_sound; Sound torch_sound;
         Sprite player[4]; Sprite key_player[4]; Sprite wall_s[4];
         Sprite fplayer[4]; Sprite fkey_player[4]; 
         Sprite tile[7]; Sprite bomb; Sprite dynamite;
