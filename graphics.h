@@ -4,6 +4,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#define TILES_PER_HEIGHT 15
+
+extern int WIDTH;
+extern int HEIGHT;
+extern int TILE_SIZE;
 
 class Graphics 
 {// private:

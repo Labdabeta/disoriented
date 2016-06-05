@@ -28,9 +28,7 @@ vector<int> range(int n){
     }
     return v;
 }
-int randint(int low, int high){
-    return (rand() % (high-low+1))+low;
-}
+int randint(int low, int high);
 bool has_key(unordered_map<string, int>map,string key){
     return map.find(key) == map.end();
 }
